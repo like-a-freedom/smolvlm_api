@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 COPY pyproject.toml .
 RUN uv pip compile pyproject.toml -o requirements.txt \
-    && uv pip install -r requirements.txt
+    && uv pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 FROM python:3.12-slim-bookworm
 
