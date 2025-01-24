@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    container_name: smolvlm-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/models:/app/model_cache
+      # - ./model_cache:/app/model_cache
+    environment:
+      - MODEL_CACHE_DIR=/app/model_cache
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [ gpu ]
+
+volumes:
+  model_cache:
