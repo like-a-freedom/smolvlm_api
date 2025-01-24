@@ -19,4 +19,4 @@ tests/
 !README.md
 models/
 tests/
-src/models/
+model_cache/
