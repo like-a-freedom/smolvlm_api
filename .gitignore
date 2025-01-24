@@ -164,3 +164,4 @@ curls.md
 prompts.md
 test_images/
 src/models
+model_cache/

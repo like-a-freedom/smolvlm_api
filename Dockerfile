@@ -26,7 +26,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 ENV MODEL_CACHE_DIR=/app/models
 
-RUN mkdir -p models
 RUN useradd -m appuser \
     && chown -R appuser:appuser /app
 USER appuser
