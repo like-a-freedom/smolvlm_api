@@ -1,9 +1,12 @@
 import os
+
 import torch
-from config import settings
-from transformers import AutoProcessor, AutoModelForVision2Seq
 from huggingface_hub import snapshot_download
-from exceptions import ModelDownloadError, ModelLoadError, ImageAnalysisError
+from PIL import Image
+from transformers import AutoModelForVision2Seq, AutoProcessor, QuantoConfig
+
+from config import settings
+from exceptions import ImageAnalysisError, ModelDownloadError, ModelLoadError
 
 
 class SmolvlmVisionService:
@@ -15,9 +18,13 @@ class SmolvlmVisionService:
         self.model_name = settings.MODEL_NAME
 
         try:
+            self.quanto_config = QuantoConfig(weights="int8")
             self.model_path = self._download_model(self.model_name)
             self.processor = self._load_processor()
             self.model = self._load_model()
+            print(
+                f"Model memory consumption: {self._get_inmemory_model_size(self.model):.2f} MB"
+            )
         except Exception as e:
             raise ModelLoadError(f"Failed to initialize vision service: {e}")
 
@@ -58,7 +65,10 @@ class SmolvlmVisionService:
         try:
             model = AutoModelForVision2Seq.from_pretrained(
                 self.model_name,
-                torch_dtype=torch.bfloat16,
+                # torch_dtype=torch.bfloat16,
+                quantization_config=self.quanto_config
+                if settings.QUANTIZE_MODEL == "True"
+                else None,
                 _attn_implementation="flash_attention_2"
                 if self.device == "cuda"
                 else "eager",
@@ -66,6 +76,18 @@ class SmolvlmVisionService:
             return model
         except Exception as e:
             raise ModelLoadError(f"Error loading model: {e}")
+
+    def _get_inmemory_model_size(self, model):
+        return sum(p.numel() for p in model.parameters()) * 4 / (1024 * 1024)
+
+    def _resize_image(self, image: Image.Image) -> Image.Image:
+        """Resize image maintaining aspect ratio"""
+        longest_edge = max(image.size)
+        if longest_edge > settings.MAX_IMAGE_SIZE:
+            scale = settings.MAX_IMAGE_SIZE / longest_edge
+            new_size = (int(image.size[0] * scale), int(image.size[1] * scale))
+            return image.resize(new_size, Image.Resampling.LANCZOS)
+        return image
 
     def describe_image(self, image, user_prompt: str) -> str:
         """
@@ -76,6 +98,7 @@ class SmolvlmVisionService:
         Returns:
             Generated text description
         """
+        image = self._resize_image(image)
         # Create input messages
         messages = [
             {

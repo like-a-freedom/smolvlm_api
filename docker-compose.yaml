@@ -10,6 +10,7 @@ services:
     environment:
       - MODEL_CACHE_DIR=/app/model_cache
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
+      - QUANTIZE_MODEL=True # Quantize model to reduce memory usage and boost performance to int8, True or False
     deploy:
       resources:
         limits:
