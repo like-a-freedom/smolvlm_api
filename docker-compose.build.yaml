@@ -9,13 +9,16 @@ services:
     environment:
       - MODEL_CACHE_DIR=/app/model_cache
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [ gpu ]
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+        # reservations:
+        #   devices:
+        #     - driver: nvidia
+        #       count: all
+        #       capabilities: [ gpu ]
 
 volumes:
   model_cache:
