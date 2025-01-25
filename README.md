@@ -11,9 +11,28 @@ The `smolvlm_api` project is designed to provide a lightweight and simple  OpenA
 3. The service will be available at `http://localhost:8000` by default.
 4. That's it! You can now start using the API.
 
-**Note**: First start, it will take some time to download the model and start the service (depends on your internet connection, need to download ~1.5GB model).
+**Notes**: 
 
-If you want to build the image yourself, you can run the following command: `docker compose up -d --build`.
+1. First start, it will take some time to download the model and start the service (depends on your internet connection, need to download ~3+GB model).
+2. In case if you're getting error like
+```
+Traceback (most recent call last):
+  File "/app/src/vision_service.py", line 30, in _download_model
+    os.makedirs(model_dir, exist_ok=True)
+  File "<frozen os>", line 225, in makedirs
+PermissionError: [Errno 13] Permission denied: '/app/model_cache/HuggingFaceTB_SmolVLM-256M-Instruct'
+```
+Then you need to change the permissions of the `model_cache` directory. You can do this by running the following command:
+```
+# Create the directory if it doesn't exist
+mkdir -p ./model_cache
+
+# Set permissions (replace 1000:1000 with your actual UID:GID)
+sudo chown -R 1000:1000 ./model_cache
+sudo chmod -R 755 ./model_cache
+```
+
+3. If you want to build the image yourself, you can run the following command: `docker compose up -d --build`.
 
 ## What else?
 
