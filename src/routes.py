@@ -1,20 +1,21 @@
+import base64
+import io
+from datetime import datetime, timezone
+
+import requests
 from fastapi import APIRouter, HTTPException
 from PIL import Image
-import io
-import base64
-import requests
 
-from datetime import datetime, timezone
-from vision_service import SmolvlmVisionService
 from config import settings
+from exceptions import VisionServiceException
 from schemas import (
-    OpenAiRequest,
-    OpenAiResponse,
+    OllamaMessage,
     OllamaRequest,
     OllamaResponse,
-    OllamaMessage,
+    OpenAiRequest,
+    OpenAiResponse,
 )
-from exceptions import VisionServiceException
+from vision_service import SmolvlmVisionService
 
 openai_router = APIRouter()
 ollama_router = APIRouter()
@@ -25,7 +26,7 @@ vision_service = SmolvlmVisionService()
 async def analyze_image(request: OpenAiRequest):
     """
     OpenAI-compatible endpoint for image analysis
-    Supports base64 encoded images and image URLs
+    Supports base64 encoded images and image URLs.
     """
     try:
         # Handle image input (base64 or URL)
@@ -37,7 +38,7 @@ async def analyze_image(request: OpenAiRequest):
                 except Exception as e:
                     raise HTTPException(
                         status_code=400, detail=f"Invalid image URL: {e}"
-                    )
+                    ) from e
             else:
                 # Assume base64 encoded image
                 try:
@@ -46,7 +47,7 @@ async def analyze_image(request: OpenAiRequest):
                 except Exception as e:
                     raise HTTPException(
                         status_code=400, detail=f"Invalid base64 image: {e}"
-                    )
+                    ) from e
         elif isinstance(request.image, bytes):
             # Handle raw image bytes
             image = Image.open(io.BytesIO(request.image))
@@ -59,9 +60,9 @@ async def analyze_image(request: OpenAiRequest):
         return OpenAiResponse(description=description)
 
     except VisionServiceException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @openai_router.post("/images/generations")
@@ -99,7 +100,9 @@ async def ollama_chat_completion(request: OllamaRequest):
             image_bytes = base64.b64decode(image_data)
             image = Image.open(io.BytesIO(image_bytes))
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Invalid image data: {e}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid image data: {e}"
+            ) from e
 
         text_answer = vision_service.describe_image(image, user_prompt=prompt)
 
@@ -111,6 +114,6 @@ async def ollama_chat_completion(request: OllamaRequest):
         )
 
     except VisionServiceException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

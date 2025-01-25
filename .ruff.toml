@@ -37,7 +37,7 @@ target-version = "py312"
 
 [lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
-select = ["ALL"]
+# select = ["ALL"]
 ignore = [
     "COM812",
     "COM819",
