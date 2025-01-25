@@ -28,7 +28,9 @@ class SmolvlmVisionService:
         try:
             model_dir = os.path.join(self.base_dir, model_name.replace("/", "_"))
             os.makedirs(model_dir, exist_ok=True)
-
+            
+            print(f"Starting download of {model_type} {model_name}")
+            
             local_path = snapshot_download(
                 repo_id=model_name,
                 local_dir=model_dir,
