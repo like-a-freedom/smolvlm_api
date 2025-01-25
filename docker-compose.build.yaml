@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/like-a-freedom/smolvlm_api:master
+    build: .
     container_name: smolvlm-api
     ports:
       - 8000:8000
